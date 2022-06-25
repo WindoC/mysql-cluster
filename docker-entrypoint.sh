@@ -13,29 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-set -e
+
+set -x
 
 # logic to wait all PEER ready. It will ready the file /etc/mysql-cluster.cnf
- if [ "${WAIT_FOR_PEER_READY:-true}" == "true" ]; then
- 	PEER_READY="false"
+if [ "${WAIT_FOR_PEER_READY:-true}" == "true" ]; then
 	if [ -f /etc/mysql-cluster.cnf ] ; then
-		for i in {1..${WAIT_FOR_PEER_RETRY:-30}} ; do
+		PEER_READY=false
+		for i in $(seq 1 ${WAIT_FOR_PEER_RETRY:-30}) ; do
 			PEER_PING_ALL="true"
 			grep "^hostname=" /etc/mysql-cluster.cnf | sed s/hostname=// | \
-			while IFS= read -r line ; do 
+			while IFS= read -r line ; do
 				#echo $line
 				ping -c 1 $line
 				if [ "$?" = "0" ] ; then
-					PEER_PING_ALL="true"
+					PEER_PING_ALL=true
 					echo "[WAIT_FOR_PEER] [DEBUG] ping $line result ok"
 				else
-					PEER_PING_ALL="false"
+					PEER_PING_ALL=false
 					echo "[WAIT_FOR_PEER] [DEBUG] ping $line result fail."
 					break
 				fi
 			done
 			if [ "$PEER_PING_ALL" == "true" ] ; then
-				PEER_READY="true"
+				PEER_READY=true
 				break
 			fi
 			echo "[WAIT_FOR_PEER] [DEBUG] Sleep ${WAIT_FOR_PEER_DELAY:-10} ..."
@@ -49,7 +50,10 @@ set -e
 		echo "[WAIT_FOR_PEER] [ERROR] /etc/mysql-cluster.cnf not found! exit!"
 		exit 1
 	fi
- fi
+fi
+
+set +x
+set -e
 
 echo "[Entrypoint] MySQL Docker Image 8.0.29-1.2.8-cluster"
 # Fetch value from server config
