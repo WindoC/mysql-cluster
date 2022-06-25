@@ -23,3 +23,21 @@ for dir in $mysql_dirs; do
     chmod g+rwx $dir
     chgrp -R 0 $dir
 done
+
+# create volume folder
+mkdir -p /data
+chmod g+rwx /data
+chgrp -R 0 /data
+
+# move them to /data (volume)
+for dir in $mysql_dirs; do
+    thename=$(basename $dir)
+    mv $dir /data/$thename
+    ln -s /data/$thename $dir
+done
+
+# chmod
+chmod 640 /etc/my.cnf 
+chmod 640 /etc/mysql-cluster.cnf
+chmod 755 /entrypoint.sh
+chmod 755 /healthcheck.sh
