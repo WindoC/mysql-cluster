@@ -14,16 +14,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
-set -x
-
 # logic to wait all PEER ready. It will ready the file /etc/mysql-cluster.cnf
 if [ "${WAIT_FOR_PEER_READY:-true}" == "true" ]; then
 	if [ -f /etc/mysql-cluster.cnf ] ; then
 		PEER_READY=false
 		for i in $(seq 1 ${WAIT_FOR_PEER_RETRY:-30}) ; do
-			PEER_PING_ALL="true"
-			grep "^hostname=" /etc/mysql-cluster.cnf | sed s/hostname=// | \
-			while IFS= read -r line ; do
+			PEER_PING_ALL=false
+			#grep "^hostname=" /etc/mysql-cluster.cnf | sed s/hostname=// | \
+			#while IFS= read -r line ; do
+			hostlist=$(grep "^hostname=" /etc/mysql-cluster.cnf | sed s/hostname=//)
+			while read line ; do
 				#echo $line
 				ping -c 1 $line
 				if [ "$?" = "0" ] ; then
@@ -34,7 +34,7 @@ if [ "${WAIT_FOR_PEER_READY:-true}" == "true" ]; then
 					echo "[WAIT_FOR_PEER] [DEBUG] ping $line result fail."
 					break
 				fi
-			done
+			done <<< $hostlist
 			if [ "$PEER_PING_ALL" == "true" ] ; then
 				PEER_READY=true
 				break
@@ -52,7 +52,6 @@ if [ "${WAIT_FOR_PEER_READY:-true}" == "true" ]; then
 	fi
 fi
 
-set +x
 set -e
 
 echo "[Entrypoint] MySQL Docker Image 8.0.29-1.2.8-cluster"
