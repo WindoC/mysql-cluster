@@ -29,7 +29,8 @@ jobs:
 
           TAGS="--tag ${DOCKER_IMAGE}:${VERSION}"
           if [[ $VERSION =~ ^[0-9]{1,3} ]]; then
-            TAGS="$TAGS --tag ${DOCKER_IMAGE}:latest"
+            # add tag 8 and latest
+            TAGS="$TAGS --tag ${DOCKER_IMAGE}:8 --tag ${DOCKER_IMAGE}:latest"
           fi
 
           echo ::set-output name=docker_image::${DOCKER_IMAGE}
