@@ -27,6 +27,7 @@ RUN microdnf update && echo "[main]" > /etc/dnf/dnf.conf \
   && microdnf install -y $MYSQL_SHELL_PACKAGE \
   && microdnf install -y --disablerepo=ol8_appstream \
    --enablerepo=mysql-cluster80-minimal $MYSQL_CLUSTER_PACKAGE \
+  && microdnf install -y iputils findutils less nano \
   && microdnf clean all \
   && mkdir /docker-entrypoint-initdb.d
 
@@ -44,4 +45,3 @@ ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD /healthcheck.sh
 EXPOSE 3306 33060 2202 1186
 CMD ["mysqld"]
-
