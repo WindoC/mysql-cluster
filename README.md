@@ -104,5 +104,9 @@ datavolumes="-v $roledatapath/data:/data"
 8. start/run the container
 
 ```shell
-docker run -d --name ndbmgm $addhosts $configvolumes $datavolumes $image $therole
+docker run -d --name ndbmgm --net host $addhosts $configvolumes $datavolumes $image $therole
+docker run -d --name ndb1   --net host $addhosts $configvolumes $datavolumes $image $therole
+docker run -d --name ndb2   --net host $addhosts $configvolumes $datavolumes $image $therole
+docker run -d --name mysql1 --net host $addhosts $configvolumes $datavolumes $image $therole
+docker run -d --name mysql2 --net host $addhosts $configvolumes $datavolumes $image $therole
 ```
