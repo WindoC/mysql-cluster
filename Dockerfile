@@ -27,12 +27,8 @@ RUN microdnf update && echo "[main]" > /etc/dnf/dnf.conf \
   && microdnf install -y $MYSQL_SHELL_PACKAGE \
   && microdnf install -y --disablerepo=ol8_appstream \
    --enablerepo=mysql-cluster80-minimal $MYSQL_CLUSTER_PACKAGE \
-  && microdnf install -y iputils findutils less nano \
   && microdnf clean all \
   && mkdir /docker-entrypoint-initdb.d
-
-COPY prepare-image.sh /
-RUN /prepare-image.sh && rm -f /prepare-image.sh
 
 ENV MYSQL_UNIX_PORT /var/lib/mysql/mysql.sock
 
@@ -41,7 +37,11 @@ COPY healthcheck.sh /healthcheck.sh
 COPY cnf/my.cnf /etc/
 COPY cnf/mysql-cluster.cnf /etc/
 
+COPY prepare-image.sh /
+RUN /prepare-image.sh && rm -f /prepare-image.sh
+
+VOLUME /data
 ENTRYPOINT ["/entrypoint.sh"]
-#HEALTHCHECK CMD /healthcheck.sh
+HEALTHCHECK CMD /healthcheck.sh
 EXPOSE 3306 33060 2202 1186
 CMD ["mysqld"]
