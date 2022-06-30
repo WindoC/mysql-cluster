@@ -47,7 +47,7 @@ image=mysql-cluster:8
 ```
 or
 ```shell
-image=windoac/bind-webmin:mysql-cluster:8
+image=windoac/mysql-cluster:8
 ```
 
 3. set therole
