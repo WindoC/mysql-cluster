@@ -1,4 +1,4 @@
-# Copyright (c) 2017, 2021, Oracle and/or its affiliates.
+# Copyright (c) 2017, 2023, Oracle and/or its affiliates.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,20 +13,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
-FROM oraclelinux:8-slim
+FROM container-registry.oracle.com/os/oraclelinux:8-slim
 
-ARG MYSQL_CLUSTER_PACKAGE=mysql-cluster-community-server-minimal-8.0.29
-ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.29
+ARG MYSQL_SERVER_PACKAGE=mysql-cluster-community-server-minimal-8.0.34
+ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.34
 
 # Setup repositories for minimal packages (all versions)
-RUN rpm -U https://repo.mysql.com/mysql-cluster-community-minimal-release-el8.rpm \
-  && rpm -U https://repo.mysql.com/mysql80-community-release-el8.rpm
+RUN rpm -U http://repo.mysql.oraclecorp.com/mysql-uat/repos-stage/mysql-cluster-community-minimal-release-el8.rpm \
+  && rpm -U http://repo.mysql.oraclecorp.com/mysql-uat/repos-stage/mysql80-community-release-el8.rpm
 
 # Install server and shell 8.0
 RUN microdnf update && echo "[main]" > /etc/dnf/dnf.conf \
-  && microdnf install -y $MYSQL_SHELL_PACKAGE \
+  && microdnf install -y --enablerepo=mysql-tools-community $MYSQL_SHELL_PACKAGE \
   && microdnf install -y --disablerepo=ol8_appstream \
-   --enablerepo=mysql-cluster80-minimal $MYSQL_CLUSTER_PACKAGE \
+   --enablerepo=mysql-cluster80-community-minimal $MYSQL_SERVER_PACKAGE \
   && microdnf clean all \
   && mkdir /docker-entrypoint-initdb.d
 
@@ -43,5 +43,5 @@ RUN /prepare-image.sh && rm -f /prepare-image.sh
 VOLUME /data
 ENTRYPOINT ["/entrypoint.sh"]
 HEALTHCHECK CMD /healthcheck.sh
-EXPOSE 3306 33060 2202 1186
+EXPOSE 3306 33060-33061 2202 1186
 CMD ["mysqld"]

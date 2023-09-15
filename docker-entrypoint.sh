@@ -29,7 +29,7 @@ done
 chmod 640 /etc/my.cnf 
 chmod 640 /etc/mysql-cluster.cnf
 
-echo "[Entrypoint] MySQL Docker Image 8.0.29-1.2.8-cluster"
+echo "[Entrypoint] MySQL Docker Image 8.0.34-1.2.13-cluster"
 # Fetch value from server config
 # We use mysqld --verbose --help instead of my_print_defaults because the
 # latter only show values present in config files, and not server defaults
@@ -100,11 +100,19 @@ if [ "$1" = 'mysqld' ]; then
 			chown mysql:mysql "$DATADIR"
 		fi
 
-		echo '[Entrypoint] Initializing database'
-		"$@" --user=$MYSQLD_USER --initialize-insecure
-		echo '[Entrypoint] Database initialized'
+		# The user can set a default_timezone either in a my.cnf file
+		# they mount into the container or on command line
+		# (`docker run mysql/mysql-server:8.0 --default-time-zone=Europe/Berlin`)
+		# however the timezone tables will only be populated in a later
+		# stage of this script. By using +00:00 as timezone we override
+		# the user's choice during initialization. Later the server
+		# will be restarted using the user's option.
 
-		"$@" --user=$MYSQLD_USER --daemonize --skip-networking --socket="$SOCKET"
+		echo '[Entrypoint] Initializing database'
+		"$@" --user=$MYSQLD_USER --initialize-insecure  --default-time-zone=+00:00
+
+		echo '[Entrypoint] Database initialized'
+		"$@" --user=$MYSQLD_USER --daemonize --skip-networking --socket="$SOCKET" --default-time-zone=+00:00
 
 		# To avoid using password on commandline, put it in a temporary file.
 		# The file is only populated when and if the root password is set.
@@ -114,7 +122,7 @@ if [ "$1" = 'mysqld' ]; then
 		# "SET @@SESSION.SQL_LOG_BIN=0;" is required for products like group replication to work properly
 		mysql=( mysql --defaults-extra-file="$PASSFILE" --protocol=socket -uroot -hlocalhost --socket="$SOCKET" --init-command="SET @@SESSION.SQL_LOG_BIN=0;")
 
-		if [ ! -z  ];
+		if [ ! -z %%STARTUP_WAIT%% ];
 		then
 			for i in {30..0}; do
 				if mysqladmin --socket="$SOCKET" ping &>/dev/null; then
@@ -233,7 +241,7 @@ EOF
 		echo "[Entrypoint] MYSQL_INITIALIZE_ONLY is set, exiting without starting MySQL..."
 		exit 0
 	else
-		echo "[Entrypoint] Starting MySQL 8.0.29-1.2.8-cluster"
+		echo "[Entrypoint] Starting MySQL 8.0.34-1.2.13-cluster"
 	fi
 	export MYSQLD_PARENT_PID=$$ ; exec "$@" --user=
 else
