@@ -19,8 +19,8 @@ ARG MYSQL_SERVER_PACKAGE=mysql-cluster-community-server-minimal-8.0.34
 ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.34
 
 # Setup repositories for minimal packages (all versions)
-RUN rpm -U http://repo.mysql.oraclecorp.com/mysql-uat/repos-stage/mysql-cluster-community-minimal-release-el8.rpm \
-  && rpm -U http://repo.mysql.oraclecorp.com/mysql-uat/repos-stage/mysql80-community-release-el8.rpm
+RUN rpm -U http://repo.mysql.com/mysql-cluster-community-minimal-release-el8.rpm \
+  && rpm -U http://repo.mysql.com/mysql80-community-release-el8.rpm
 
 # Install server and shell 8.0
 RUN microdnf update && echo "[main]" > /etc/dnf/dnf.conf \
@@ -38,7 +38,7 @@ COPY cnf/my.cnf /etc/
 COPY cnf/mysql-cluster.cnf /etc/
 
 COPY prepare-image.sh /
-RUN /prepare-image.sh && rm -f /prepare-image.sh
+RUN bash /prepare-image.sh && rm -f /prepare-image.sh
 
 VOLUME /data
 ENTRYPOINT ["/entrypoint.sh"]

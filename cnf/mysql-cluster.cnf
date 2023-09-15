@@ -41,3 +41,6 @@ hostname=mysql1
 [mysqld]
 NodeId=5
 hostname=mysql2
+
+[tcp default]
+AllowUnresolvedHostnames=1

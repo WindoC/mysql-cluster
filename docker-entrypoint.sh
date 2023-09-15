@@ -26,8 +26,8 @@ for dir in $mysql_dirs; do
 		chgrp -R 0 $dir
 	fi
 done
-chmod 640 /etc/my.cnf 
-chmod 640 /etc/mysql-cluster.cnf
+# chmod 640 /etc/my.cnf 
+# chmod 640 /etc/mysql-cluster.cnf
 
 echo "[Entrypoint] MySQL Docker Image 8.0.34-1.2.13-cluster"
 # Fetch value from server config

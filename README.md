@@ -110,3 +110,168 @@ docker run -d --name ndb2   --net host $addhosts $configvolumes $datavolumes $im
 docker run -d --name mysql1 --net host $addhosts $configvolumes $datavolumes $image $therole
 docker run -d --name mysql2 --net host $addhosts $configvolumes $datavolumes $image $therole
 ```
+
+
+```yaml
+version: "3.7"
+
+volumes:
+
+  ndbmgm_data:
+  ndb1_data:
+  ndb2_data:
+  mysql1_data:
+  mysql2_data:
+
+configs:
+
+   my.cnf:
+      external: true
+      name: my.cnf
+
+   mysql-cluster.cnf:
+      external: true
+      name: mysql-cluster.cnf
+
+services:
+
+  ndbmgm:
+    image: localhost:5000/mysql-cluster:8
+    command: ndb_mgmd
+    hostname: ndbmgm
+    volumes:
+      - ndbmgm_data:/data
+    configs:
+      - source: my.cnf
+        target: /etc/my.cnf
+      - source: mysql-cluster.cnf
+        target: /etc/mysql-cluster.cnf
+    # ports:
+    #   - 3306:3306/udp
+    environment:
+      TZ : Asia/Hong_Kong
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.mysql-cluster-ndbmgm==true"
+      restart_policy:
+        condition: any
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ndb1:
+    image: localhost:5000/mysql-cluster:8
+    command: ndbd
+    hostname: ndb1
+    volumes:
+      - ndb1_data:/data
+    configs:
+      - source: my.cnf
+        target: /etc/my.cnf
+      - source: mysql-cluster.cnf
+        target: /etc/mysql-cluster.cnf
+    # ports:
+    #   - 3306:3306/udp
+    environment:
+      TZ : Asia/Hong_Kong
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.mysql-cluster-ndb1==true"
+      restart_policy:
+        condition: any
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ndb2:
+    image: localhost:5000/mysql-cluster:8
+    command: ndbd
+    hostname: ndb2
+    volumes:
+      - ndb2_data:/data
+    configs:
+      - source: my.cnf
+        target: /etc/my.cnf
+      - source: mysql-cluster.cnf
+        target: /etc/mysql-cluster.cnf
+    # ports:
+    #   - 3306:3306/udp
+    environment:
+      TZ : Asia/Hong_Kong
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.mysql-cluster-ndb2==true"
+      restart_policy:
+        condition: any
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mysql1:
+    image: localhost:5000/mysql-cluster:8
+    command: mysqld
+    hostname: mysql1
+    volumes:
+      - mysql1_data:/data
+    configs:
+      - source: my.cnf
+        target: /etc/my.cnf
+      - source: mysql-cluster.cnf
+        target: /etc/mysql-cluster.cnf
+    # ports:
+    #   - 3306:3306/udp
+    environment:
+      TZ : Asia/Hong_Kong
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.mysql-cluster-mysql1==true"
+      restart_policy:
+        condition: any
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mysql2:
+    image: localhost:5000/mysql-cluster:8
+    command: mysqld
+    hostname: mysql2
+    volumes:
+      - mysql2_data:/data
+    configs:
+      - source: my.cnf
+        target: /etc/my.cnf
+      - source: mysql-cluster.cnf
+        target: /etc/mysql-cluster.cnf
+    # ports:
+    #   - 3306:3306/udp
+    environment:
+      TZ : Asia/Hong_Kong
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.labels.mysql-cluster-mysql2==true"
+      restart_policy:
+        condition: any
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
