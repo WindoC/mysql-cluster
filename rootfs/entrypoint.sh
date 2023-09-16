@@ -18,18 +18,44 @@ set -e
 # make sure volume data folder create before start mysql
 chmod g+rwx /data
 chgrp -R 0 /data
-mysql_dirs="/data/mysql /data/mysql-files /data/mysql-keyring /data/mysqld"
-for dir in $mysql_dirs; do
-	if [ ! -d $dir ] ; then
-		mkdir -p $dir
-		chmod g+rwx $dir
-		chgrp -R 0 $dir
+mysql_dirs="/var/lib/mysql /var/lib/mysql-files /var/lib/mysql-keyring /var/run/mysqld /usr/mysql-cluster"
+for srcpath in $mysql_dirs; do
+	dstpath=/data/$(basename $srcpath)
+	# /data no data, copy init data from image
+	if [ ! -d $dstpath ] && [ -d $srcpath ] ; then
+		mv $srcpath $dstpath
 	fi
+	# config not linked and init data existed
+	if [ ! -L $srcpath ] && [ -d $srcpath ] ; then
+		mv $srcpath ${srcpath}.bak
+	fi
+	# create link
+	if [ ! -L $srcpath ] && [ -d $dstpath ] ; then
+		ln -s $dstpath $srcpath
+	fi
+	chmod g+rwx $dstpath
+	chgrp -R 0 $dstpath
 done
-# chmod 640 /etc/my.cnf 
-# chmod 640 /etc/mysql-cluster.cnf
+config_files="/etc/my.cnf /etc/mysql-cluster.cnf"
+for srcconfig in $config_files; do
+	dstconfig=/data/$(basename $srcconfig)
+	# /data no data, copy init data from image
+	if [ ! -f $dstconfig ] && [ -f $srcconfig ] ; then
+		mv $srcconfig $dstconfig
+	fi
+	# config not linked and init data existed
+	if [ ! -L $srcconfig ] && [ -f $srcconfig ] ; then
+		mv $srcconfig ${srcconfig}.bak
+	fi
+	# create link
+	if [ ! -L $srcconfig ] ; then
+		ln -s $dstconfig $srcconfig
+	fi
+	chmod 640 $dstconfig
+	chgrp -R 0 $dstconfig
+done
 
-echo "[Entrypoint] MySQL Docker Image 8.0.34-1.2.13-cluster"
+echo "[Entrypoint] MySQL Cluster ${VERSION}"
 # Fetch value from server config
 # We use mysqld --verbose --help instead of my_print_defaults because the
 # latter only show values present in config files, and not server defaults
@@ -241,7 +267,7 @@ EOF
 		echo "[Entrypoint] MYSQL_INITIALIZE_ONLY is set, exiting without starting MySQL..."
 		exit 0
 	else
-		echo "[Entrypoint] Starting MySQL 8.0.34-1.2.13-cluster"
+		echo "[Entrypoint] Starting MySQL Cluster ${VERSION}"
 	fi
 	export MYSQLD_PARENT_PID=$$ ; exec "$@" --user=
 else
@@ -275,4 +301,3 @@ else
 	fi
 	exec "$@"
 fi
-

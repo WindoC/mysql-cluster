@@ -13,10 +13,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 
-FROM container-registry.oracle.com/os/oraclelinux:8-slim
+FROM oraclelinux:8-slim
 
-ARG MYSQL_SERVER_PACKAGE=mysql-cluster-community-server-minimal-8.0.34
-ARG MYSQL_SHELL_PACKAGE=mysql-shell-8.0.34
+ENV VERSION=8.0.34
+
+ARG MYSQL_SERVER_PACKAGE=mysql-cluster-community-server-minimal-${VERSION}
+ARG MYSQL_SHELL_PACKAGE=mysql-shell-${VERSION}
 
 # Setup repositories for minimal packages (all versions)
 RUN rpm -U http://repo.mysql.com/mysql-cluster-community-minimal-release-el8.rpm \
@@ -32,12 +34,14 @@ RUN microdnf update && echo "[main]" > /etc/dnf/dnf.conf \
 
 ENV MYSQL_UNIX_PORT /var/lib/mysql/mysql.sock
 
-COPY docker-entrypoint.sh /entrypoint.sh
-COPY healthcheck.sh /healthcheck.sh
-COPY cnf/my.cnf /etc/
-COPY cnf/mysql-cluster.cnf /etc/
+# COPY docker-entrypoint.sh /entrypoint.sh
+# COPY healthcheck.sh /healthcheck.sh
+# COPY cnf/my.cnf /etc/
+# COPY cnf/mysql-cluster.cnf /etc/
+# COPY prepare-image.sh /
 
-COPY prepare-image.sh /
+COPY rootfs/ /
+
 RUN bash /prepare-image.sh && rm -f /prepare-image.sh
 
 VOLUME /data

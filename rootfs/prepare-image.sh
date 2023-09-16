@@ -16,7 +16,7 @@
 
 
 # Create directories needed by mysqld and make them writable by group 0
-mysql_dirs="/var/lib/mysql /var/lib/mysql-files /var/lib/mysql-keyring /var/run/mysqld"
+mysql_dirs="/var/lib/mysql /var/lib/mysql-files /var/lib/mysql-keyring /var/run/mysqld /usr/mysql-cluster"
 
 for dir in $mysql_dirs; do
     mkdir -p $dir
@@ -29,15 +29,22 @@ mkdir -p /data
 chmod g+rwx /data
 chgrp -R 0 /data
 
-# move them to /data (volume)
-for dir in $mysql_dirs; do
-    thename=$(basename $dir)
-    mv $dir /data/$thename
-    ln -s /data/$thename $dir
-done
-
 # chmod
+chmod 755 /etc
 chmod 640 /etc/my.cnf 
 chmod 640 /etc/mysql-cluster.cnf
 chmod 755 /entrypoint.sh
 chmod 755 /healthcheck.sh
+
+linkifnotexist () {
+    $srcpath=$1
+    $dstpath=$1
+    if [ ! -f $dstpath ] ; then
+        if [ -f $srcpath ] ; then
+            ln -s $srcpath $dstpath
+        fi
+    fi
+}
+
+# makesure bash path
+linkifnotexist /usr/bin/bash /bin/bash

@@ -18,7 +18,6 @@ NoOfReplicas=2
 DataMemory=80M
 IndexMemory=18M
 
-
 [ndb_mgmd]
 NodeId=1
 hostname=ndbmgm
