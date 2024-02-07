@@ -15,7 +15,7 @@
 
 FROM oraclelinux:8-slim
 
-ENV VERSION=8.0.34
+ENV VERSION=8.0.36
 
 ARG MYSQL_SERVER_PACKAGE=mysql-cluster-community-server-minimal-${VERSION}
 ARG MYSQL_SHELL_PACKAGE=mysql-shell-${VERSION}
